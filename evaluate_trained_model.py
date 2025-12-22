@@ -74,7 +74,6 @@ def load_config_from_checkpoint(checkpoint_path: Path) -> PretrainConfig:
     cfg_path = checkpoint_dir / "all_config.yaml"
     raw = cfg_path.read_text()
 
-    # -------- 1. clean YAML 从 beta1 开始（此部分可正常解析）--------
     idx = raw.find("\nbeta1:")
     if idx == -1:
         raise RuntimeError("Cannot locate clean YAML block (beta1:)")
@@ -82,7 +81,6 @@ def load_config_from_checkpoint(checkpoint_path: Path) -> PretrainConfig:
     clean_yaml = raw[idx+1:]
     flat = yaml.safe_load(clean_yaml)
 
-    # -------- 2. 从损坏 Hydra dump 中提取 arch 字段（你之前已验证可行）--------
     # 提取 loops
     m = re.search(r"\bloops:\s*(\d+)", raw)
     loops = int(m.group(1)) if m else 16
@@ -119,15 +117,13 @@ def load_config_from_checkpoint(checkpoint_path: Path) -> PretrainConfig:
     m = re.search(r"\bL_cycles:\s*(\d+)", raw)
     L_cycles = int(m.group(1)) if m else 6
 
-    arch_name = "loop.v22@LoopedTransformer"
+    arch_name = "urm.urm@URM"
 
-    # -------- arch.loss 字段无法从 clean 找到，填入正确值 --------
     arch_loss = {
         "loss_type": "stablemax_cross_entropy",
         "name": "losses@ACTLossHead"
     }
 
-    # -------- 3. 构造 arch dict --------
     arch = {
         "H_cycles": H_cycles,
         "L_cycles": L_cycles,
@@ -143,7 +139,6 @@ def load_config_from_checkpoint(checkpoint_path: Path) -> PretrainConfig:
         "puzzle_emb_ndim": puzzle_emb_ndim,
     }
 
-    # -------- 4. 合并到 flat 并构造 PretrainConfig --------
     flat["arch"] = arch
 
     return PretrainConfig(**flat)
