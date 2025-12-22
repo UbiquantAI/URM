@@ -1,5 +1,5 @@
-run_name="URM"
-checkpoint_path="/volume/pt-train/users/ztgao/loop_arcagi/checkpoints/${run_name}" 
+run_name="URM-arcagi2"
+checkpoint_path="checkpoints/${run_name}" 
 mkdir -p $checkpoint_path
 
 torchrun --nproc-per-node 8 pretrain.py \
